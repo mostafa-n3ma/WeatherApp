@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">WeatherApp</string>
+    <string name="sky_background">sky Background</string>
+    <string name="location_button">location Button</string>
+    <string name="search_for_a_city_or_airport">Search for a city or airport</string>
+</resources>
