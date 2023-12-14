@@ -1,5 +1,8 @@
 package com.example.weatherapp.components
 
+import android.util.Log
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.TweenSpec
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -23,18 +26,24 @@ import androidx.compose.material.BottomSheetScaffold
 import androidx.compose.material.BottomSheetValue
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
+import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.Text
 import androidx.compose.material.rememberBottomSheetScaffoldState
 import androidx.compose.material.rememberBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.End
 import androidx.compose.ui.Alignment.Companion.Start
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
@@ -52,25 +61,50 @@ import com.example.weatherapp.ui.theme.LightSecondary
 import com.example.weatherapp.ui.theme.LinearGradient
 import com.example.weatherapp.ui.theme.StatCardLinear
 import com.example.weatherapp.ui.theme.color1
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.launch
 
 @ExperimentalMaterialApi
 @Preview
 @Composable
 fun bottomPreview() {
-    SheetContent()
+    BottomSheetScreen()
 }
 
+val TAG ="BottomSheet"
 
 @ExperimentalMaterialApi
 @Composable
 fun BottomSheetScreen() {
+    val animationSpec = remember {
+        TweenSpec<Float>(
+            durationMillis = 500,
+            easing = FastOutSlowInEasing
+        )
+    }
+
     val sheetState = rememberBottomSheetState(
-        initialValue = BottomSheetValue.Collapsed
+        initialValue = BottomSheetValue.Collapsed,
+        animationSpec = animationSpec
     )
+
+    LaunchedEffect(Unit) {
+        sheetState.snapshots().collect { state ->
+            if (state.isAnimationRunning) {
+                Log.d(TAG, "Bottom sheet animation started")
+            }
+        }
+    }
+
+
     val scaffoldState = rememberBottomSheetScaffoldState(
-        bottomSheetState = sheetState
+        bottomSheetState = sheetState,
     )
+
+
     val scope = rememberCoroutineScope()
+
 
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
@@ -93,8 +127,10 @@ fun BottomSheetScreen() {
             H = "19",
             S = "12"
         )
+
     }
-}
+
+    }
 
 @Composable
 private fun SheetContent() {
@@ -210,7 +246,8 @@ fun PressureWidget() {
             painter = painterResource(id = R.drawable.pressure_round_bar),
             contentDescription = "pressure",
             modifier = Modifier
-                .size(110.dp).align(Alignment.CenterHorizontally)
+                .size(110.dp)
+                .align(Alignment.CenterHorizontally)
         )
 
     }

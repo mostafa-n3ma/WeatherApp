@@ -24,8 +24,6 @@ fun MyApp() {
 }
 
 
-
-
 enum class AppDestinations{
     HomeScreen,
     SearchScreen
