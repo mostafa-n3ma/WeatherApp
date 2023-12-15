@@ -7,6 +7,10 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -41,8 +45,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.End
 import androidx.compose.ui.Alignment.Companion.Start
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.layout
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -77,29 +83,19 @@ val TAG ="BottomSheet"
 @ExperimentalMaterialApi
 @Composable
 fun BottomSheetScreen() {
-    val animationSpec = remember {
-        TweenSpec<Float>(
-            durationMillis = 500,
-            easing = FastOutSlowInEasing
-        )
-    }
+
 
     val sheetState = rememberBottomSheetState(
         initialValue = BottomSheetValue.Collapsed,
-        animationSpec = animationSpec
     )
 
-    LaunchedEffect(Unit) {
-        sheetState.snapshots().collect { state ->
-            if (state.isAnimationRunning) {
-                Log.d(TAG, "Bottom sheet animation started")
-            }
-        }
+
+    val snackbarHost: SnackbarHostState = remember {
+        SnackbarHostState()
     }
-
-
     val scaffoldState = rememberBottomSheetScaffoldState(
         bottomSheetState = sheetState,
+        snackbarHostState = snackbarHost
     )
 
 
@@ -109,7 +105,8 @@ fun BottomSheetScreen() {
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
         sheetContent = {
-            SheetContent()
+            SheetContentWithTrackedHeight()
+//            SheetContent()
         },
         sheetPeekHeight = 325.dp,
         sheetShape = RoundedCornerShape(
@@ -131,6 +128,44 @@ fun BottomSheetScreen() {
     }
 
     }
+
+
+@Composable
+fun SheetContentWithTrackedHeight() {
+    // Use remember to store the height value
+    val (composableHeight, setComposableHeight) = remember { mutableStateOf(0) }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+//            .onGloballyPositioned { coordinates: LayoutCoordinates ->
+//                // Update the height value when the composable is positioned
+//                setComposableHeight(coordinates.size.height)
+//                Log.d(TAG, "SheetContentWithTrackedHeight: ${coordinates.isAttached}")
+//            }
+            .pointerInput(Unit) {
+                detectVerticalDragGestures { change, dragAmount ->
+                    Log.d(TAG, "detectVerticalDragGestures: $change ")
+                }
+            }
+    ) {
+        // Your bottom sheet content
+        // The height of this Box will be tracked
+        SheetContent()
+    }
+
+
+}
+
+
+
+
+
+
+
+
+
+
 
 @Composable
 private fun SheetContent() {
