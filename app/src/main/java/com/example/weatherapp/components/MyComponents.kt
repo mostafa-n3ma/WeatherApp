@@ -1,7 +1,6 @@
 package com.example.weatherapp.components
 
-import android.hardware.camera2.params.BlackLevelPattern
-import android.widget.ImageButton
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -10,25 +9,22 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.BottomSheetScaffoldState
+import androidx.compose.material.BottomSheetValue
+import androidx.compose.material.DrawerValue
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.IconButton
-import androidx.compose.material.darkColors
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
@@ -45,18 +41,24 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.example.weatherapp.AppDestinations
 import com.example.weatherapp.R
 import com.example.weatherapp.ui.theme.DarkPrimary
 import com.example.weatherapp.ui.theme.DarkSecondary
-import com.example.weatherapp.ui.theme.LinearGradient
 import com.example.weatherapp.ui.theme.StatCardLinear
 import com.example.weatherapp.ui.theme.TransparentColor
 
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun HomeScreenBackgroundCompose(city: String, degree: String, condition: String, H: String, S: String) {
+fun HomeScreenBackgroundCompose(
+    city: String,
+    degree: String,
+    condition: String,
+    H: String,
+    S: String,
+    bottomSheetProgress: BottomSheetScaffoldState
+) {
     Box(modifier = Modifier.fillMaxSize()){
         Image(painter = painterResource(id = R.drawable.sky)
             , contentDescription = stringResource(R.string.sky_background),
@@ -67,7 +69,7 @@ fun HomeScreenBackgroundCompose(city: String, degree: String, condition: String,
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            CityMainTextCompose(city,degree, condition, H, S)
+            CityMainTextCompose(city,degree, condition, H, S,bottomSheetProgress)
             Image(modifier = Modifier
                 .width(390.dp)
                 .height(390.dp),
@@ -80,13 +82,22 @@ fun HomeScreenBackgroundCompose(city: String, degree: String, condition: String,
 }
 
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun CityMainTextCompose(city: String, degree: String, condition: String, H: String, S: String) {
+fun CityMainTextCompose(
+    city: String,
+    degree: String,
+    condition: String,
+    H: String,
+    S: String,
+    bottomSheetProgress: BottomSheetScaffoldState
+) {
     Column(modifier = Modifier
         .width(390.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        Log.d(TAG, "CityMainTextCompose: ${bottomSheetProgress.bottomSheetState.progress},${bottomSheetProgress.bottomSheetState.targetValue}")
         Text(modifier = Modifier
             .fillMaxWidth(),
             text = city,
@@ -94,7 +105,7 @@ fun CityMainTextCompose(city: String, degree: String, condition: String, H: Stri
                 fontSize = 34.sp,
                 fontFamily = FontFamily(Font(R.font.sf_pro_display_regular)),
                 fontWeight = FontWeight(400),
-                color = DarkPrimary,
+//                color = DarkPrimary,
                 textAlign = TextAlign.Center,
                 letterSpacing = 0.37.sp,
             )
@@ -333,7 +344,7 @@ fun HourStateComposable(hour:String, degree: String) {
 fun HourStateCheckedComposable() {
     Column(modifier = Modifier
         .shadow(elevation = 10.dp, spotColor = Color(0x40000000), ambientColor = Color(0x40000000))
-        .border(width = 1.dp, color = Color(0x33FFFFFF), shape = RoundedCornerShape(36.dp) )
+        .border(width = 1.dp, color = Color(0x33FFFFFF), shape = RoundedCornerShape(36.dp))
         .width(60.dp)
         .height(146.dp)
         .background(color = Color(0x3348319D), shape = RoundedCornerShape(size = 30.dp))
@@ -365,7 +376,7 @@ fun HourStateCheckedComposable() {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Child views.
-            Image(modifier =Modifier
+            Image(modifier = Modifier
                 .padding(0.dp)
                 .width(32.dp)
                 .height(32.dp),

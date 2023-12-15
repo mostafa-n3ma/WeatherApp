@@ -1,16 +1,9 @@
 package com.example.weatherapp.components
 
-import android.util.Log
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.TweenSpec
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
-import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,29 +20,20 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.BottomSheetScaffold
+import androidx.compose.material.BottomSheetScaffoldState
 import androidx.compose.material.BottomSheetValue
+import androidx.compose.material.DrawerValue
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
-import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.Text
 import androidx.compose.material.rememberBottomSheetScaffoldState
-import androidx.compose.material.rememberBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.End
 import androidx.compose.ui.Alignment.Companion.Start
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.LayoutCoordinates
-import androidx.compose.ui.layout.layout
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
@@ -67,9 +51,6 @@ import com.example.weatherapp.ui.theme.LightSecondary
 import com.example.weatherapp.ui.theme.LinearGradient
 import com.example.weatherapp.ui.theme.StatCardLinear
 import com.example.weatherapp.ui.theme.color1
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.launch
 
 @ExperimentalMaterialApi
 @Preview
@@ -84,29 +65,16 @@ val TAG ="BottomSheet"
 @Composable
 fun BottomSheetScreen() {
 
-
-    val sheetState = rememberBottomSheetState(
-        initialValue = BottomSheetValue.Collapsed,
-    )
+    val scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState()
 
 
-    val snackbarHost: SnackbarHostState = remember {
-        SnackbarHostState()
-    }
-    val scaffoldState = rememberBottomSheetScaffoldState(
-        bottomSheetState = sheetState,
-        snackbarHostState = snackbarHost
-    )
 
-
-    val scope = rememberCoroutineScope()
 
 
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
         sheetContent = {
-            SheetContentWithTrackedHeight()
-//            SheetContent()
+            SheetContent()
         },
         sheetPeekHeight = 325.dp,
         sheetShape = RoundedCornerShape(
@@ -122,49 +90,13 @@ fun BottomSheetScreen() {
             degree = "14",
             condition = "Mostly Clear",
             H = "19",
-            S = "12"
+            S = "12",
+            scaffoldState
         )
 
     }
 
     }
-
-
-@Composable
-fun SheetContentWithTrackedHeight() {
-    // Use remember to store the height value
-    val (composableHeight, setComposableHeight) = remember { mutableStateOf(0) }
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-//            .onGloballyPositioned { coordinates: LayoutCoordinates ->
-//                // Update the height value when the composable is positioned
-//                setComposableHeight(coordinates.size.height)
-//                Log.d(TAG, "SheetContentWithTrackedHeight: ${coordinates.isAttached}")
-//            }
-            .pointerInput(Unit) {
-                detectVerticalDragGestures { change, dragAmount ->
-                    Log.d(TAG, "detectVerticalDragGestures: $change ")
-                }
-            }
-    ) {
-        // Your bottom sheet content
-        // The height of this Box will be tracked
-        SheetContent()
-    }
-
-
-}
-
-
-
-
-
-
-
-
-
 
 
 @Composable
