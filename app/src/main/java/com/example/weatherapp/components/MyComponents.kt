@@ -17,8 +17,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BottomSheetScaffoldState
-import androidx.compose.material.BottomSheetValue
-import androidx.compose.material.DrawerValue
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.IconButton
 import androidx.compose.material3.Icon
@@ -57,7 +55,7 @@ fun HomeScreenBackgroundCompose(
     condition: String,
     H: String,
     S: String,
-    bottomSheetProgress: BottomSheetScaffoldState
+    bottomSheetScaffoldState: BottomSheetScaffoldState
 ) {
     Box(modifier = Modifier.fillMaxSize()){
         Image(painter = painterResource(id = R.drawable.sky)
@@ -69,7 +67,7 @@ fun HomeScreenBackgroundCompose(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            CityMainTextCompose(city,degree, condition, H, S,bottomSheetProgress)
+            CityMainTextCompose(city,degree, condition, H, S,bottomSheetScaffoldState)
             Image(modifier = Modifier
                 .width(390.dp)
                 .height(390.dp),
@@ -90,14 +88,14 @@ fun CityMainTextCompose(
     condition: String,
     H: String,
     S: String,
-    bottomSheetProgress: BottomSheetScaffoldState
+    bottomSheetScaffoldState: BottomSheetScaffoldState
 ) {
     Column(modifier = Modifier
         .width(390.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Log.d(TAG, "CityMainTextCompose: ${bottomSheetProgress.bottomSheetState.progress},${bottomSheetProgress.bottomSheetState.targetValue}")
+        Log.d(TAG, "CityMainTextCompose: ${bottomSheetScaffoldState.bottomSheetState.progress},${bottomSheetScaffoldState.bottomSheetState.targetValue}")
         Text(modifier = Modifier
             .fillMaxWidth(),
             text = city,
