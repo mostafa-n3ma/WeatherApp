@@ -63,13 +63,9 @@ val TAG ="BottomSheet"
 
 @ExperimentalMaterialApi
 @Composable
-fun BottomSheetScreen() {
+fun BottomSheetScreen():BottomSheetScaffoldState {
 
     val scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState()
-
-
-
-
 
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
@@ -95,7 +91,7 @@ fun BottomSheetScreen() {
         )
 
     }
-
+        return scaffoldState
     }
 
 

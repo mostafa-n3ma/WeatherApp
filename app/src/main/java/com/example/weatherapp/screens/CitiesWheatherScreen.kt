@@ -64,6 +64,7 @@ fun CitiesWeatherPreview() {
 
 @Composable
 fun CitiesWeatherScreen(navController: NavController) {
+
     Column(
         modifier = Modifier
             .fillMaxSize()
