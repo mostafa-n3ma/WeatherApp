@@ -421,8 +421,6 @@ fun HomeScreenFront(navController: NavController) {
         }
 
 
-
-
     }
 }
 
