@@ -1,4 +1,4 @@
-package com.example.weatherapp.components
+package com.example.weatherapp.presentation.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -43,14 +43,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.weatherapp.R
-import com.example.weatherapp.ui.theme.GradiantBar
-import com.example.weatherapp.ui.theme.DarkPrimary
-import com.example.weatherapp.ui.theme.DarkSecondary
-import com.example.weatherapp.ui.theme.DarkTertiary
-import com.example.weatherapp.ui.theme.LightSecondary
-import com.example.weatherapp.ui.theme.LinearGradient
-import com.example.weatherapp.ui.theme.StatCardLinear
-import com.example.weatherapp.ui.theme.color1
+import com.example.weatherapp.presentation.ui.theme.GradiantBar
+import com.example.weatherapp.presentation.ui.theme.DarkPrimary
+import com.example.weatherapp.presentation.ui.theme.DarkSecondary
+import com.example.weatherapp.presentation.ui.theme.DarkTertiary
+import com.example.weatherapp.presentation.ui.theme.LightSecondary
+import com.example.weatherapp.presentation.ui.theme.LinearGradient
+import com.example.weatherapp.presentation.ui.theme.StatCardLinear
+import com.example.weatherapp.presentation.ui.theme.color1
 
 @ExperimentalMaterialApi
 @Preview

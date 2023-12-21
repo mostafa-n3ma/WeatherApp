@@ -1,4 +1,4 @@
-package com.example.weatherapp.screens
+package com.example.weatherapp.presentation.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -42,11 +42,11 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.weatherapp.R
-import com.example.weatherapp.ui.theme.DarkPrimary
-import com.example.weatherapp.ui.theme.DarkSecondary
-import com.example.weatherapp.ui.theme.DarkTertiary
-import com.example.weatherapp.ui.theme.LinearGradient
-import com.example.weatherapp.ui.theme.SearchBarGradient
+import com.example.weatherapp.presentation.ui.theme.DarkPrimary
+import com.example.weatherapp.presentation.ui.theme.DarkSecondary
+import com.example.weatherapp.presentation.ui.theme.DarkTertiary
+import com.example.weatherapp.presentation.ui.theme.LinearGradient
+import com.example.weatherapp.presentation.ui.theme.SearchBarGradient
 
 val weatherItems = listOf<WeatherItem>(
     WeatherItem(19, 24, 18, "Montreal", "Canada", WeatherConditions.moon_cloud_mid_rain),

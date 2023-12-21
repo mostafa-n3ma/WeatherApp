@@ -1,4 +1,4 @@
-package com.example.weatherapp.components
+package com.example.weatherapp.presentation.components
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -50,13 +50,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.example.weatherapp.AppDestinations
+import com.example.weatherapp.presentation.AppDestinations
 import com.example.weatherapp.R
-import com.example.weatherapp.ui.theme.DarkPrimary
-import com.example.weatherapp.ui.theme.DarkSecondary
-import com.example.weatherapp.ui.theme.LinearGradient
-import com.example.weatherapp.ui.theme.StatCardLinear
-import com.example.weatherapp.ui.theme.TransparentColor
+import com.example.weatherapp.presentation.ui.theme.DarkPrimary
+import com.example.weatherapp.presentation.ui.theme.DarkSecondary
+import com.example.weatherapp.presentation.ui.theme.LinearGradient
+import com.example.weatherapp.presentation.ui.theme.StatCardLinear
+import com.example.weatherapp.presentation.ui.theme.TransparentColor
 
 
 @OptIn(ExperimentalMaterialApi::class)
