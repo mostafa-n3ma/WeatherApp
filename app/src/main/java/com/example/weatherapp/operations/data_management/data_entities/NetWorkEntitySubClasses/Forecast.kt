@@ -23,7 +23,7 @@ data class Hour (
     @SerializedName("cloud"          ) var cloud        : Int?        = null,
     @SerializedName("will_it_rain"   ) var willItRain   : Int?        = null,
     @SerializedName("chance_of_rain" ) var chanceOfRain : Int?        = null,
-    @SerializedName("vis_km"         ) var visKm        : Int?        = null,
+    @SerializedName("vis_km"         ) var visKm        : Double?        = null,
     @SerializedName("uv"             ) var uv           : Int?        = null,
     @SerializedName("air_quality"    ) var airQuality   : AirQuality? = AirQuality()
 
@@ -39,7 +39,7 @@ data class Day (
     @SerializedName("maxtemp_c"            ) var maxtempC          : Double?     = null,//
     @SerializedName("mintemp_c"            ) var mintempC          : Double?     = null,//
     @SerializedName("avgtemp_c"            ) var avgtempC          : Double?     = null,//
-    @SerializedName("avgvis_km"            ) var avgvisKm          : Int?        = null,
+    @SerializedName("avgvis_km"            ) var avgvisKm          : Double?        = null,
     @SerializedName("avghumidity"          ) var avghumidity       : Int?        = null,
     @SerializedName("daily_will_it_rain"   ) var dailyWillItRain   : Int?        = null,
     @SerializedName("daily_chance_of_rain" ) var dailyChanceOfRain : Int?        = null,//

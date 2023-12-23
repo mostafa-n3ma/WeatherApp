@@ -3,11 +3,12 @@ package com.example.weatherapp.presentation.screens
 import android.util.Log
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
+import com.example.weatherapp.operations.MY_API_KEY
+import com.example.weatherapp.operations.data_management.data_entities.NetWorkEntity
 import com.example.weatherapp.presentation.components.HomeScreenFront
 
 
@@ -15,24 +16,13 @@ import com.example.weatherapp.presentation.components.HomeScreenFront
 
 @ExperimentalMaterialApi
 @Composable
-fun HomeScreen(nav: NavHostController) {
-    HomeScreenFront(nav)
-
-//    val viewModel: WeatherViewModel = hiltViewModel()
-//
-//    // Fetch weather data when the screen is first composed
-//    LaunchedEffect(Unit) {
-//        viewModel.fetchWeatherData(apiKey = "YOUR_API_KEY", location = "London")
-//    }
-//
-//    // Observe the weather data changes
-//    val weatherData = viewModel.weatherData.observeAsState()
-//    // You might want to use `weatherData.value` to access the data when it's available
-//
-//    // Log the API response
-//    weatherData.value?.let { data ->
-//        Log.d("API test", "Data = $data")
-//    }
+fun HomeScreen(nav: NavHostController,viewModel: WeatherViewModel) {
+    HomeScreenFront(nav,viewModel)
+    viewModel.fetchWeatherData(MY_API_KEY,"Cairo")
+    val data: State<NetWorkEntity?> = viewModel.weatherData.observeAsState()
+    data.let {
+        Log.d("api test", "onCreate: data: ${it.value}")
+    }
 }
 
 
@@ -42,5 +32,5 @@ fun HomeScreen(nav: NavHostController) {
 @Preview(showBackground = true)
 @Composable
 fun HomePreview() {
-    HomeScreen(nav = rememberNavController())
+//    HomeScreen(nav = rememberNavController())
 }

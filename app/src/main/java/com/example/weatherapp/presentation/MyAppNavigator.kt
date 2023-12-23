@@ -10,10 +10,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.weatherapp.presentation.screens.CitiesWeatherScreen
 import com.example.weatherapp.presentation.screens.HomeScreen
+import com.example.weatherapp.presentation.screens.WeatherViewModel
 
 @ExperimentalMaterialApi
 @Composable
-fun MyAppNavigator() {
+fun MyAppNavigator(viewModel: WeatherViewModel) {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = AppDestinations.HomeScreen.name){
         composable(
@@ -31,7 +32,7 @@ fun MyAppNavigator() {
                 )
             }
         ){
-            HomeScreen(navController)
+            HomeScreen(navController,viewModel)
         }
         composable(
             AppDestinations.SearchScreen.name,

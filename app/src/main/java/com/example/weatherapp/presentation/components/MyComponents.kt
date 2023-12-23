@@ -52,6 +52,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.weatherapp.presentation.AppDestinations
 import com.example.weatherapp.R
+import com.example.weatherapp.presentation.screens.WeatherViewModel
 import com.example.weatherapp.presentation.ui.theme.DarkPrimary
 import com.example.weatherapp.presentation.ui.theme.DarkSecondary
 import com.example.weatherapp.presentation.ui.theme.LinearGradient
@@ -318,10 +319,10 @@ fun ExpandCityMainTextCompose(
 
 @ExperimentalMaterialApi
 @Composable
-fun HomeScreenFront(navController: NavController) {
+fun HomeScreenFront(navController: NavController, viewModel: WeatherViewModel) {
     Box(modifier = Modifier.fillMaxSize()) {
 
-        val isVisible = when(BottomSheetScreen().bottomSheetState.targetValue){
+        val isVisible = when(BottomSheetScreen(viewModel).bottomSheetState.targetValue){
             BottomSheetValue.Collapsed-> false
             BottomSheetValue.Expanded->true
         }
@@ -633,5 +634,5 @@ fun HourStateCheckedComposable() {
 @Preview(showBackground = false)
 @Composable
 fun MainTxtPreview() {
-  HomeScreenFront(rememberNavController())
+//  HomeScreenFront(rememberNavController(), viewModel)
 }
