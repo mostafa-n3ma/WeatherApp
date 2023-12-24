@@ -21,5 +21,4 @@ data class Current (
     @SerializedName("gust_mph"           ) var gustMph          : Double?     = null,
     @SerializedName("gust_kph"           ) var gustKph          : Double?     = null,
     @SerializedName("air_quality"        ) var airQuality       : AirQuality? = AirQuality()//
-
 )
