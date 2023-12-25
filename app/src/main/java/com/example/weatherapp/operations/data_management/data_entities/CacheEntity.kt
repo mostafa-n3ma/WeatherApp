@@ -7,7 +7,7 @@ import com.example.weatherapp.operations.data_management.data_entities.NetWorkEn
 import com.example.weatherapp.operations.data_management.data_utils.DefaultMapper
 import javax.inject.Inject
 
-@Entity(tableName = "Cache Entities")
+@Entity(tableName = "Caches")
 data class CacheEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Int?,

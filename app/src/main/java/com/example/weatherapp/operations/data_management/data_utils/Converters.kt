@@ -5,7 +5,7 @@ import com.example.weatherapp.operations.data_management.data_entities.DailyFore
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
-class Converters {
+class CacheConverters {
 
     private val gson = Gson()
 
