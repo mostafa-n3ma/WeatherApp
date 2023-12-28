@@ -18,11 +18,7 @@ import com.example.weatherapp.presentation.components.HomeScreenFront
 @Composable
 fun HomeScreen(nav: NavHostController,viewModel: WeatherViewModel) {
     HomeScreenFront(nav,viewModel)
-    viewModel.fetchWeatherData(MY_API_KEY,"Cairo")
-    val data: State<NetWorkEntity?> = viewModel.weatherData.observeAsState()
-    data.let {
-        Log.d("api test", "onCreate: data: ${it.value}")
-    }
+
 }
 
 

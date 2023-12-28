@@ -372,7 +372,8 @@ fun HomeScreenFront(navController: NavController, viewModel: WeatherViewModel) {
                             }
                         }
                         .align(Alignment.BottomCenter),
-                    onClick = {  }) {
+                    onClick = {
+                    }) {
                     Box(modifier = Modifier
                         .align(Alignment.Center)
                         .padding(bottom = 24.dp)){

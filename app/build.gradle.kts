@@ -1,8 +1,7 @@
-
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id ("com.google.dagger.hilt.android")
+    id("com.google.dagger.hilt.android")
     kotlin("kapt") // Apply the Kotlin kapt plugin
 }
 
@@ -79,20 +78,17 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
     implementation("androidx.activity:activity-compose")
 
-// Hilt
-//    implementation("androidx.hilt:hilt-navigation-compose:1.2.0-alpha01")
-//    implementation("androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha03")
-//    kapt("androidx.hilt:hilt-compiler:1.1.0")
-    implementation ("com.google.dagger:hilt-android:2.50")
-    kapt ("com.google.dagger:hilt-compiler:2.50")
+    // Hilt
+    implementation("com.google.dagger:hilt-android:2.50")
+    kapt("com.google.dagger:hilt-compiler:2.50")
 
 
     // Room
     val room_version = "2.6.1"
-    implementation ("androidx.room:room-runtime:$room_version")
-    kapt ("androidx.room:room-compiler:$room_version")
-    implementation ("androidx.room:room-ktx:$room_version")
-    implementation( "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1")
+    implementation("androidx.room:room-runtime:$room_version")
+    kapt("androidx.room:room-compiler:$room_version")
+    implementation("androidx.room:room-ktx:$room_version")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1")
 
 
     // Retrofit

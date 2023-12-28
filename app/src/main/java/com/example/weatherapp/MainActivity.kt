@@ -11,16 +11,22 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import com.example.weatherapp.operations.MY_API_KEY
 import com.example.weatherapp.presentation.MyAppNavigator
 import com.example.weatherapp.presentation.screens.WeatherViewModel
 import com.example.weatherapp.presentation.ui.theme.WeatherAppTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
+import kotlin.math.log
 
 @ExperimentalMaterialApi
 @AndroidEntryPoint
  class MainActivity : ComponentActivity() {
     val viewModel :WeatherViewModel by viewModels()
+    companion object{
+        val TAG = "MainActivity"
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -30,12 +36,18 @@ import dagger.hilt.android.AndroidEntryPoint
                     color = MaterialTheme.colorScheme.background
                 ) {
                     MyAppNavigator(viewModel)
-//                    viewModel.fetchWeatherData(MY_API_KEY,"london")
-//                    viewModel.weatherData.observe(this, Observer {
-//                        if (it!=null){
-//                            Log.d("api test", "onCreate: data: $it")
-//                        }
-//                    })
+                    viewModel.liveLocationList.observe(this, Observer {
+                        Log.d(TAG, "onCreate:x99 liveLocationsData: ${it}")
+                    })
+
+                    viewModel.liveMainDisplayLocation.observe(this, Observer {
+                        if (it != null) {
+                            Log.d(TAG, "onCreate:x99 live Main Display : $it + ${it.isLastSearchedLocation}")
+                        }else{
+                            Log.d(TAG, "onCreate:x99 live Main Display : null }")
+                        }
+                    })
+
                 }
             }
         }

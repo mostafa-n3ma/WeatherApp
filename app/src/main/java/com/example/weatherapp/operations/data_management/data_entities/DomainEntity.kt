@@ -1,7 +1,7 @@
 package com.example.weatherapp.operations.data_management.data_entities
 
 data class DomainEntity(
-    val id: Int?=null ,
+    var id: Int?=null ,
     var isLastSearchedLocation:Boolean = false,
 
 

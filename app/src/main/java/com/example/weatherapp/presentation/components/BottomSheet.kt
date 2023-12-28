@@ -65,7 +65,6 @@ val TAG ="BottomSheet"
 @Composable
 fun BottomSheetScreen(viewModel: WeatherViewModel):BottomSheetScaffoldState {
 
-    val data = viewModel.weatherData.observeAsState()
     val scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState()
 
     BottomSheetScaffold(
@@ -83,18 +82,12 @@ fun BottomSheetScreen(viewModel: WeatherViewModel):BottomSheetScaffoldState {
     ) {
         // Content for the screen
         HomeScreenBackgroundCompose(
-            city = when(data.value){
-                                   null -> ""
-                else-> data.value!!.location!!.name!!
-                                   },
-            degree = when(data.value){
-                null -> ""
-                else-> data.value!!.current!!.tempC.toString()
-            },
+            city = "Kut",
+            degree = "44",
             condition = "Mostly Clear",
             H = "19",
             S = "12",
-            scaffoldState
+            bottomSheetScaffoldState = scaffoldState
         )
 
     }
