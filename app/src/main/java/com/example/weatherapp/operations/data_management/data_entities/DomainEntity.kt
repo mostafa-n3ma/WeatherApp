@@ -11,7 +11,7 @@ data class DomainEntity(
     val lat: Double? = null,
     val lon: Double? = null,
     val lastUpdated: String?= null,
-    val tempC: Int? = null,
+    val tempC: Double? = null,
     val feelslikeC: Double?,
     val condition_txt: String?,
     val condition_ic: String?,

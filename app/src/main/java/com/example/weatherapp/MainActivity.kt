@@ -11,8 +11,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.Observer
-import androidx.lifecycle.lifecycleScope
-import com.example.weatherapp.operations.MY_API_KEY
 import com.example.weatherapp.presentation.MyAppNavigator
 import com.example.weatherapp.presentation.screens.WeatherViewModel
 import com.example.weatherapp.presentation.ui.theme.WeatherAppTheme
@@ -39,7 +37,7 @@ import kotlin.math.log
                     viewModel.liveLocationList.observe(this, Observer {
                         Log.d(TAG, "onCreate:x99 liveLocationsData: ${it.size}")
                         if (it.isNullOrEmpty()){
-                            viewModel.defaultDisplayLocation()
+                            viewModel.getDefaultDisplayLocation()
                         }
                     })
 

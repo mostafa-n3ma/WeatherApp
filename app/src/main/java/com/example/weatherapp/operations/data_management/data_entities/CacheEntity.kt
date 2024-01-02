@@ -21,7 +21,7 @@ data class CacheEntity(
 
     // current.
     val lastUpdated: String? = null,
-    val tempC: Int? = null,
+    val tempC: Double? = null,
     val feelslikeC: Double? = null,
     val condition_txt: String? = null,
     val condition_ic: String? = null,

@@ -49,7 +49,7 @@ fun MyAppNavigator(viewModel: WeatherViewModel) {
                 )
             }
         ){
-            CitiesWeatherScreen(navController)
+            CitiesWeatherScreen(navController,viewModel)
         }
 
     }

@@ -18,7 +18,6 @@ import com.example.weatherapp.presentation.components.HomeScreenFront
 @Composable
 fun HomeScreen(nav: NavHostController,viewModel: WeatherViewModel) {
     HomeScreenFront(nav,viewModel)
-
 }
 
 
