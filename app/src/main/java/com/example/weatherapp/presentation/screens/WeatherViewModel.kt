@@ -36,6 +36,19 @@ constructor(
         val TAG: String = "WeatherViewModel"
     }
 
+    private val _forecastType = MutableLiveData<ForecastType>()
+    val forecastType:LiveData<ForecastType> get() = _forecastType
+
+    fun changeForeCastTo(forecastType: ForecastType){
+        _forecastType.value = forecastType
+    }
+
+
+
+    init {
+        _forecastType.value = ForecastType.hourly
+    }
+
      val liveLocationList :LiveData<List<DomainEntity>> get() = repository.getSearchedLocationsList()
 
     val liveMainDisplayLocation:LiveData<DomainEntity?> get() = repository.getMainDisplay().map {cacheEntity ->
@@ -47,7 +60,7 @@ constructor(
     }
 
 
-    fun clearDataBase(){
+    private fun clearDataBase(){
         viewModelScope.launch (Dispatchers.IO){
             repository.clearDatabase()
         }
@@ -62,6 +75,17 @@ constructor(
 
     }
 
+     fun defaultDisplayLocation() {
+            viewModelScope.launch (Dispatchers.IO){
+                val defaultLocation: DomainEntity = repository.getLocationForecast(MY_API_KEY,"baghdad")
+                defaultLocation.isLastSearchedLocation =true
+                repository.insertCacheItem(defaultLocation)
+        }
+    }
 
 
+}
+
+enum class ForecastType{
+    hourly,daily
 }

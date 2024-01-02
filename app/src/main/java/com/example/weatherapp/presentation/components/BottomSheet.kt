@@ -1,10 +1,16 @@
 package com.example.weatherapp.presentation.components
 
+import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +22,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -26,9 +34,8 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.End
 import androidx.compose.ui.Alignment.Companion.Start
@@ -42,6 +49,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.weatherapp.R
+import com.example.weatherapp.operations.data_management.data_entities.DailyForecast
+import com.example.weatherapp.operations.data_management.data_entities.DomainEntity
+import com.example.weatherapp.operations.data_management.data_entities.HourlyForecast
+import com.example.weatherapp.operations.data_management.data_utils.getShortDayOfWeekFromDate
+import com.example.weatherapp.operations.data_management.data_utils.getTimeFormattedWithHourCondition
+import com.example.weatherapp.presentation.screens.ForecastType
 import com.example.weatherapp.presentation.screens.WeatherViewModel
 import com.example.weatherapp.presentation.ui.theme.GradiantBar
 import com.example.weatherapp.presentation.ui.theme.DarkPrimary
@@ -57,20 +70,22 @@ import com.example.weatherapp.presentation.ui.theme.color1
 @Composable
 fun bottomPreview() {
 //    BottomSheetScreen(viewModel)
+//    SheetContent(viewModel)
 }
 
-val TAG ="BottomSheet"
+val TAG = "BottomSheet"
 
 @ExperimentalMaterialApi
 @Composable
-fun BottomSheetScreen(viewModel: WeatherViewModel):BottomSheetScaffoldState {
+fun BottomSheetScreen(viewModel: WeatherViewModel): BottomSheetScaffoldState {
 
+    val data: State<DomainEntity?> = viewModel.liveMainDisplayLocation.observeAsState()
     val scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState()
 
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
         sheetContent = {
-            SheetContent()
+            SheetContent(data, viewModel)
         },
         sheetPeekHeight = 325.dp,
         sheetShape = RoundedCornerShape(
@@ -82,21 +97,56 @@ fun BottomSheetScreen(viewModel: WeatherViewModel):BottomSheetScaffoldState {
     ) {
         // Content for the screen
         HomeScreenBackgroundCompose(
-            city = "Kut",
-            degree = "44",
-            condition = "Mostly Clear",
-            H = "19",
-            S = "12",
-            bottomSheetScaffoldState = scaffoldState
+            city = when (data.value) {
+                null -> "No Data"
+                else -> data.value!!.name!!
+            },
+            degree = when (data.value) {
+                null -> "0"
+                else -> data.value!!.tempC
+            }.toString(),
+            condition = when (data.value) {
+                null -> "No Data"
+                else -> data.value!!.condition_txt.toString()
+            },
+            H = when (data.value) {
+                null -> "0"
+                else -> data.value!!.maxtempC.toString()
+            },
+            S = when (data.value) {
+                null -> "0"
+                else -> data.value!!.mintempC.toString()
+            },
+            scaffoldState
         )
 
+
+//        HomeScreenBackgroundCompose(
+//            city = "Kut",
+//            degree = "44",
+//            condition = "Mostly Clear",
+//            H = "19",
+//            S = "12",
+//            bottomSheetScaffoldState = scaffoldState
+//        )
+
+        // HomeScreenBackgroundCompose(
+        //            city = mainDisplayLocation.value!!.name?:"No Data",
+        //            degree = mainDisplayLocation.value!!.tempC.toString()?:"00",
+        //            condition = mainDisplayLocation.value!!.condition_txt?:"No Data",
+        //            H = mainDisplayLocation.value!!.maxtempC.toString()?:"0",
+        //            S = mainDisplayLocation.value!!.mintempC.toString()?:"0",
+        //            bottomSheetScaffoldState = scaffoldState
+        //        )
     }
-        return scaffoldState
-    }
+    return scaffoldState
+}
 
 
 @Composable
-private fun SheetContent() {
+private fun SheetContent(data: State<DomainEntity?>, viewModel: WeatherViewModel) {
+
+
     val scrollState = rememberScrollState()
     Box(
         modifier = Modifier
@@ -119,17 +169,17 @@ private fun SheetContent() {
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            BottomSheetTopBar()
-            HourlyWeatherForeCast()
-            AirQualityWidget()
+            BottomSheetTopBar(viewModel)
+            ForeCastRow(data, viewModel)
+            AirQualityWidget(data)
             Row(
                 modifier = Modifier
                     .padding(horizontal = 16.dp, vertical = 4.dp)
                     .fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally)
             ) {
-                UvIndexWidget()
-                SunRiseWidget()
+                UvIndexWidget(data)
+                SunRiseWidget(data)
             }
             Row(
                 modifier = Modifier
@@ -137,7 +187,7 @@ private fun SheetContent() {
                     .fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally)
             ) {
-                WindWidget()
+                WindWidget(data)
                 RainFallWidget()
             }
 
@@ -147,8 +197,8 @@ private fun SheetContent() {
                     .fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally)
             ) {
-                FeelsLikeWidget()
-                HumidityWidget()
+                FeelsLikeWidget(data)
+                HumidityWidget(data)
             }
 
             Row(
@@ -157,15 +207,15 @@ private fun SheetContent() {
                     .fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally)
             ) {
-                VisibilityWidget()
-                PressureWidget()
+                VisibilityWidget(data)
+                PressureWidget(data)
             }
         }
     }
 }
 
 @Composable
-fun PressureWidget() {
+fun PressureWidget(data: State<DomainEntity?>) {
     Column(
         modifier = Modifier
             .size(164.dp)
@@ -183,7 +233,7 @@ fun PressureWidget() {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 16.dp, top = 16.dp, bottom = 4.dp),
+                .padding(bottom = 4.dp, start = 16.dp, top = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.Start),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -204,21 +254,44 @@ fun PressureWidget() {
             )
         }
 
-
-        Image(
-            painter = painterResource(id = R.drawable.pressure_round_bar),
-            contentDescription = "pressure",
+        Box(
             modifier = Modifier
-                .size(110.dp)
-                .align(Alignment.CenterHorizontally)
-        )
+                .fillMaxSize(),
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.pressure_round_bar),
+                contentDescription = "wid",
+                modifier = Modifier
+                    .size(200.dp)
+            )
+            Column(
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier.align(Alignment.Center)
+            ) {
+                Text(
+                    text = when (data.value) {
+                        null -> ""
+                        else -> data.value!!.pressureIn.toString()
+                    },
+                    style = TextStyle(
+                        fontFamily = FontFamily(Font(R.font.sf_pro_display_medium)),
+                        fontWeight = FontWeight(600),
+                        color = DarkPrimary,
+                        fontSize = 24.sp
+                    ),
+
+                    )
+
+
+            }
+        }
 
     }
 }
 
 @Composable
-fun VisibilityWidget() {
-    Column (
+fun VisibilityWidget(data: State<DomainEntity?>) {
+    Column(
         modifier = Modifier
             .size(164.dp)
             .background(
@@ -256,7 +329,10 @@ fun VisibilityWidget() {
             )
         }
         Text(
-            text = "8 km",
+            text = when (data.value) {
+                null -> ""
+                else -> "${data.value!!.visKm.toString()} Km"
+            },
             style = TextStyle(
                 fontFamily = FontFamily(Font(R.font.sf_pro_display_medium)),
                 fontWeight = FontWeight(600),
@@ -280,8 +356,8 @@ fun VisibilityWidget() {
 }
 
 @Composable
-fun HumidityWidget() {
-    Column (
+fun HumidityWidget(data: State<DomainEntity?>) {
+    Column(
         modifier = Modifier
             .size(164.dp)
             .background(
@@ -319,7 +395,10 @@ fun HumidityWidget() {
             )
         }
         Text(
-            text = "90%",
+            text = when (data.value) {
+                null -> "No Data"
+                else -> "${data.value!!.humidity.toString()} %"
+            },
             style = TextStyle(
                 fontFamily = FontFamily(Font(R.font.sf_pro_display_medium)),
                 fontWeight = FontWeight(600),
@@ -343,7 +422,7 @@ fun HumidityWidget() {
 }
 
 @Composable
-fun FeelsLikeWidget() {
+fun FeelsLikeWidget(data: State<DomainEntity?>) {
     Column(
         modifier = Modifier
             .size(164.dp)
@@ -383,7 +462,10 @@ fun FeelsLikeWidget() {
         }
 
         Text(
-            text = "19°",
+            text = when (data.value) {
+                null -> ""
+                else -> data.value!!.feelslikeC.toString()
+            },
             style = TextStyle(
                 fontFamily = FontFamily(Font(R.font.sf_pro_display_medium)),
                 fontWeight = FontWeight(600),
@@ -483,7 +565,7 @@ fun RainFallWidget() {
 
 
 @Composable
-fun WindWidget() {
+fun WindWidget(data: State<DomainEntity?>) {
     Column(
         modifier = Modifier
             .size(164.dp)
@@ -537,7 +619,10 @@ fun WindWidget() {
                 modifier = Modifier.align(Alignment.Center)
             ) {
                 Text(
-                    text = "9.7",
+                    text = when (data.value) {
+                        null -> ""
+                        else -> data.value!!.windKph.toString()
+                    },
                     style = TextStyle(
                         fontFamily = FontFamily(Font(R.font.sf_pro_display_medium)),
                         fontWeight = FontWeight(600),
@@ -564,7 +649,7 @@ fun WindWidget() {
 }
 
 @Composable
-fun UvIndexWidget() {
+fun UvIndexWidget(data: State<DomainEntity?>) {
     Column(
         modifier = Modifier
             .width(164.dp)
@@ -604,7 +689,15 @@ fun UvIndexWidget() {
             )
         }
         Text(
-            text = "4",
+            text = when (data.value) {
+                null -> {
+                    ""
+                }
+
+                else -> {
+                    data.value!!.uv.toString() ?: "x"
+                }
+            },
             style = TextStyle(
                 fontFamily = FontFamily(Font(R.font.sf_pro_display_medium)),
                 fontWeight = FontWeight(700),
@@ -639,7 +732,7 @@ fun UvIndexWidget() {
 }
 
 @Composable
-fun SunRiseWidget() {
+fun SunRiseWidget(data: State<DomainEntity?>) {
     Column(
         modifier = Modifier
             .width(164.dp)
@@ -677,11 +770,19 @@ fun SunRiseWidget() {
             )
         }
         Text(
-            text = "5:28 AM",
+            text = when (data.value) {
+                null -> {
+                    ""
+                }
+
+                else -> {
+                    data.value!!.sunrise ?: ""
+                }
+            },
             style = TextStyle(
                 fontFamily = FontFamily(Font(R.font.sf_pro_display_regular)),
                 fontWeight = FontWeight(400),
-                fontSize = 32.sp,
+                fontSize = 28.sp,
                 color = DarkPrimary
             )
         )
@@ -705,15 +806,14 @@ fun SunRiseWidget() {
 
 
 @Composable
-fun BottomSheetTopBar() {
+fun BottomSheetTopBar(viewModel: WeatherViewModel) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .background(LinearGradient),
     ) {
-        val underLinePosition = remember {
-            mutableStateOf(true)
-        }
+
+        var forecastType: State<ForecastType?> = viewModel.forecastType.observeAsState()
         Image(
             modifier = Modifier
                 .padding(top = 8.dp)
@@ -735,7 +835,8 @@ fun BottomSheetTopBar() {
                     .width(111.dp)
                     .height(20.dp)
                     .clickable {
-                        underLinePosition.value = true
+//                        underLinePosition.value = true
+                        viewModel.changeForeCastTo(ForecastType.hourly)
                     },
                 text = "Hourly Forecast",
                 style = TextStyle(
@@ -750,7 +851,8 @@ fun BottomSheetTopBar() {
                     .width(111.dp)
                     .height(20.dp)
                     .clickable {
-                        underLinePosition.value = false
+//                        underLinePosition.value = false
+                        viewModel.changeForeCastTo(ForecastType.daily)
                     },
                 text = "Weekly Forecast",
                 style = TextStyle(
@@ -766,10 +868,15 @@ fun BottomSheetTopBar() {
                 .padding(start = 30.dp, end = 35.dp)
                 .width(120.dp)
                 .align(
-                    if (underLinePosition.value) {
-                        Start
-                    } else {
-                        End
+//                    if (underLinePosition.value) {
+//                        Start
+//                    } else {
+//                        End
+//                    }
+                    when (forecastType.value) {
+                        ForecastType.hourly -> Start
+                        ForecastType.daily -> End
+                        else -> Start
                     }
                 )
                 .height(1.dp)
@@ -782,24 +889,70 @@ fun BottomSheetTopBar() {
 
 
 @Composable
-fun HourlyWeatherForeCast() {
-    val state = rememberScrollState()
+fun ForeCastRow(data: State<DomainEntity?>, viewModel: WeatherViewModel) {
+    val forecastType: State<ForecastType?> = viewModel.forecastType.observeAsState()
+
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 20.dp, start = 20.dp)
-            .horizontalScroll(state),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
+        modifier = Modifier.fillMaxWidth()
     ) {
-        repeat(24) {
-            HourStateCheckedComposable()
+        AnimatedVisibility(
+            visible = forecastType.value == ForecastType.hourly,
+            enter = slideInHorizontally(initialOffsetX = { -it }, animationSpec = tween(400)),
+            exit = slideOutHorizontally(targetOffsetX = { -it }, animationSpec = tween(200))) {
+            LazyRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 20.dp, start = 20.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
+            ) {
+                if (data.value != null) {
+                    items(data.value!!.hourly_forecast) { item: HourlyForecast ->
+                        ForecastItem(
+                            time_data = getTimeFormattedWithHourCondition(item.time!!),
+                            condition_txt = item.condition_txt,
+                            condition_ic = item.condition_ic,
+                            degree = item.temp_c.toString(),
+                        )
+                    }
+                }
+            }
+
         }
+
+        AnimatedVisibility(
+            visible = forecastType.value == ForecastType.daily,
+            enter = slideInHorizontally(initialOffsetX = { it }, animationSpec = tween(400)),
+            exit = slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(200))
+        ) {
+            LazyRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 20.dp, start = 20.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
+            ) {
+                if (data.value != null) {
+                    items(data.value!!.daily_forecast) { item: DailyForecast ->
+                        ForecastItem(
+                            time_data = getShortDayOfWeekFromDate(item.date!!),
+                            condition_txt = item.condition_txt,
+                            condition_ic = item.condition_ic,
+                            degree = item.temp_c.toString(),
+                        )
+                    }
+                }
+            }
+        }
+
+
     }
+
+
 }
 
 @Composable
-fun AirQualityWidget() {
+fun AirQualityWidget(mainDisplayLocation: State<DomainEntity?>) {
     Column(
         Modifier.fillMaxWidth()
     ) {
@@ -846,7 +999,32 @@ fun AirQualityWidget() {
             Text(
                 modifier = Modifier
                     .padding(start = 16.dp, bottom = 4.dp),
-                text = "3-Low Health Risk",
+                text = when (mainDisplayLocation.value) {
+                    null -> {
+                        ""
+                    }
+
+                    else -> {
+//                        "${mainDisplayLocation.value.airQuality.toString() ?: "x"} -Low Health Risk"
+                        when (mainDisplayLocation.value) {
+                            null -> {
+                                "No Data"
+                            }
+
+                            else -> {
+                                when (mainDisplayLocation.value!!.airQuality) {
+                                    null -> {
+                                        "No Data"
+                                    }
+
+                                    else -> {
+                                        "${mainDisplayLocation.value!!.airQuality.toString() ?: "x"} -Low Health Risk"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
                 style = TextStyle(
                     fontFamily = FontFamily(Font(R.font.sf_pro_display_medium)),
                     fontWeight = FontWeight(600),

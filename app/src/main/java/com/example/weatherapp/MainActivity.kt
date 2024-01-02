@@ -37,7 +37,10 @@ import kotlin.math.log
                 ) {
                     MyAppNavigator(viewModel)
                     viewModel.liveLocationList.observe(this, Observer {
-                        Log.d(TAG, "onCreate:x99 liveLocationsData: ${it}")
+                        Log.d(TAG, "onCreate:x99 liveLocationsData: ${it.size}")
+                        if (it.isNullOrEmpty()){
+                            viewModel.defaultDisplayLocation()
+                        }
                     })
 
                     viewModel.liveMainDisplayLocation.observe(this, Observer {
