@@ -78,8 +78,8 @@ val TAG = "BottomSheet"
 @ExperimentalMaterialApi
 @Composable
 fun BottomSheetScreen(viewModel: WeatherViewModel): BottomSheetScaffoldState {
-
     val data: State<DomainEntity?> = viewModel.liveMainDisplayLocation.observeAsState()
+    Log.d(TAG, "BottomSheetScreen: main display : ${data.value}")
     val scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState()
 
     BottomSheetScaffold(

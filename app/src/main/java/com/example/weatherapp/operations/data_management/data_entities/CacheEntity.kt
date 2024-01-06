@@ -30,7 +30,7 @@ data class CacheEntity(
     val windKph: Double? = null,
     val windDir: String? = null,
     val humidity: Int? = null,
-    val visKm: Int? = null,
+    val visKm: Double? = null,
     val pressureIn: Double? = null,
 
     // forcaste.Forecastday.day
@@ -100,7 +100,7 @@ constructor():DefaultMapper<DomainEntity,CacheEntity>{
     override fun mapToDomain(entity: CacheEntity): DomainEntity {
         return DomainEntity(
             id = entity.id,
-            isLastSearchedLocation = entity.isLastSearchedLocation,
+            isMAinDisplay = entity.isLastSearchedLocation,
             name = entity.name,
             country = entity.country,
             lat = entity.lat,
@@ -130,7 +130,7 @@ constructor():DefaultMapper<DomainEntity,CacheEntity>{
     override fun mapFromDomain(domain: DomainEntity): CacheEntity {
         return CacheEntity(
             id = domain.id,
-            isLastSearchedLocation = domain.isLastSearchedLocation,
+            isLastSearchedLocation = domain.isMAinDisplay,
             name = domain.name,
             country = domain.country,
             lat = domain.lat,

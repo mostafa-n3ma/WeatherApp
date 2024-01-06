@@ -1,5 +1,6 @@
 package com.example.weatherapp.presentation.components
 
+import android.util.Log
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -401,6 +402,8 @@ fun HomeScreenFront(navController: NavController, viewModel: WeatherViewModel) {
                             Modifier
                                 .size(64.dp)
                                 .clickable {
+                                    navController.navigate(AppDestinations.SearchScreen.name)
+                                    viewModel.requestFocusOnTextField(true)
                                 })
                     }
                 }
@@ -592,7 +595,8 @@ fun ForecastItem(
                     "Now" -> {
                         StatCardLinear
                     }
-                    isCurrentDayEEE()->{
+
+                    isCurrentDayEEE() -> {
                         StatCardLinear
                     }
 

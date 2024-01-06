@@ -1,7 +1,11 @@
 package com.example.weatherapp
 
+import android.app.Activity
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.view.inputmethod.InputMethodManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -27,6 +31,7 @@ import kotlin.math.log
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        var updated =false
         setContent {
             WeatherAppTheme {
                 Surface(
@@ -35,22 +40,39 @@ import kotlin.math.log
                 ) {
                     MyAppNavigator(viewModel)
                     viewModel.liveLocationList.observe(this, Observer {
-                        Log.d(TAG, "onCreate:x99 liveLocationsData: ${it.size}")
+                        Log.d(TAG, "onCreate:x99 liveLocationsData: ${it}")
                         if (it.isNullOrEmpty()){
                             viewModel.getDefaultDisplayLocation()
-                        }
-                    })
-
-                    viewModel.liveMainDisplayLocation.observe(this, Observer {
-                        if (it != null) {
-                            Log.d(TAG, "onCreate:x99 live Main Display : $it + ${it.isLastSearchedLocation}")
                         }else{
-                            Log.d(TAG, "onCreate:x99 live Main Display : null }")
+                            Log.d(TAG, "onCreate: calling update cache once: update:$updated")
+                            if (!updated){
+                                viewModel.updateCacheData(it)
+                                updated =true
+                            }
                         }
                     })
+                    viewModel.liveMainDisplayLocation.observe(this, Observer {
+                        Log.d(TAG, "onCreate: Main Display Location : $it")
+                    })
 
+                    viewModel.hideKeyBoard.observe(this, Observer {
+                        if (it){
+                            hideKeyboard()
+                        }
+                    })
                 }
             }
         }
     }
+}
+
+
+
+fun Activity.hideKeyboard() {
+    hideKeyboard(currentFocus ?: View(this))
+}
+
+fun Context.hideKeyboard(view: View) {
+    val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+    inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
 }

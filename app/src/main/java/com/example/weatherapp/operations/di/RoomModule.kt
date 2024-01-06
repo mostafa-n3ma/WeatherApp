@@ -22,7 +22,7 @@ object DatabaseModule{
             context,
             WeatherDatabase::class.java,
             "weather database"
-        ).build()
+        ).fallbackToDestructiveMigration().build()
     }
 
 

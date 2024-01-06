@@ -19,7 +19,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface CacheDoa {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertCacheItem(cacheItem: CacheEntity)
+    suspend fun insertCacheItem(cacheItem: CacheEntity):Long
 
     @Query("SELECT * FROM Caches")
     fun getAllCaches(): LiveData<List<CacheEntity>>
@@ -38,7 +38,7 @@ interface CacheDoa {
     suspend fun clearDatabase()
 }
 
-@Database(entities = [CacheEntity::class], version = 1, exportSchema = false)
+@Database(entities = [CacheEntity::class], version = 2, exportSchema = false)
 @TypeConverters(CacheConverters::class)
 abstract class WeatherDatabase : RoomDatabase() {
     abstract fun getCacheDao(): CacheDoa

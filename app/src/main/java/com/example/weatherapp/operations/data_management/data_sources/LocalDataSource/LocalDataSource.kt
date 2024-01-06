@@ -9,8 +9,8 @@ import javax.inject.Inject
 class LocalDataSource
 @Inject
 constructor(private val cacheDoa: CacheDoa): DefaultLocalDataSource{
-    override suspend fun insert(cacheEntity: CacheEntity) {
-        cacheDoa.insertCacheItem(cacheEntity)
+    override suspend fun insert(cacheEntity: CacheEntity):Long {
+       return cacheDoa.insertCacheItem(cacheEntity)
     }
 
     override suspend fun update(cacheEntity: CacheEntity) {

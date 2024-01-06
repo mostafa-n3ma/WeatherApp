@@ -6,7 +6,7 @@ import com.example.weatherapp.operations.data_management.data_utils.DataState
 import kotlinx.coroutines.flow.Flow
 
 interface DefaultLocalDataSource {
-    suspend fun insert(cacheEntity: CacheEntity)
+    suspend fun insert(cacheEntity: CacheEntity):Long
 
     suspend fun update (cacheEntity: CacheEntity)
 

@@ -1,8 +1,11 @@
+@file:OptIn(ExperimentalComposeUiApi::class)
+
 package com.example.weatherapp.presentation.screens
 
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,7 +19,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Icon
@@ -28,13 +30,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -42,7 +50,6 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -50,13 +57,14 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.weatherapp.R
 import com.example.weatherapp.operations.data_management.data_entities.DomainEntity
+import com.example.weatherapp.presentation.AppDestinations
 import com.example.weatherapp.presentation.ui.theme.DarkPrimary
 import com.example.weatherapp.presentation.ui.theme.DarkSecondary
 import com.example.weatherapp.presentation.ui.theme.DarkTertiary
 import com.example.weatherapp.presentation.ui.theme.LinearGradient
-import com.example.weatherapp.presentation.ui.theme.SearchBarGradient
 import com.example.weatherapp.presentation.ui.theme.TransparentColor
 
+val TAG = "CitiesWeatherScreen"
 
 @Preview
 @Composable
@@ -73,26 +81,39 @@ fun CitiesWeatherScreen(navController: NavController, viewModel: WeatherViewMode
             .background(LinearGradient)
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
-        val cities = viewModel.liveLocationList.observeAsState()
         WeatherBackButtonTopBar(navController)
-//        CitiesSearchBar(label = stringResource(id = R.string.search_for_a_city_or_airport))
-        SearchBar()
+        SearchBar(viewModel)
+        CitiesWeatherList(viewModel,navController)
 
-        CitiesWeatherList(cities)
     }
 }
 
-
 @Composable
-fun SearchBar() {
-    val editableText = remember {
+fun HideKeyBoard() {
+    LocalSoftwareKeyboardController.current?.hide()
+}
+
+@ExperimentalComposeUiApi
+@Composable
+fun SearchBar(viewModel: WeatherViewModel) {
+    val editableText: MutableState<String> = remember {
         mutableStateOf("")
+    }
+
+    val focusState: State<Boolean?> = viewModel.focusOnTextField.observeAsState()
+    val focusRequester = FocusRequester()
+    LaunchedEffect(focusState.value){
+        if (focusState.value == true){
+            focusRequester.requestFocus()
+            viewModel.requestFocusOnTextField(false)
+        }
     }
 
     OutlinedTextField(
         value = editableText.value,
         onValueChange = { editableText.value = it },
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
+        singleLine = true,
         label = { Text(text = stringResource(id = R.string.search_for_a_city_or_airport)) },
         colors = TextFieldDefaults.outlinedTextFieldColors(
             focusedBorderColor = DarkSecondary,
@@ -116,6 +137,10 @@ fun SearchBar() {
         keyboardActions = KeyboardActions(
             onSearch = {
                 Log.d("search Bar testing", "SearchBar: search(${editableText.value}")
+                if (editableText.value.trim().isNotEmpty()){
+                    viewModel.search(editableText.value)
+                    viewModel.hideKeBoard()
+                }
             }
         ),
         trailingIcon = {
@@ -134,7 +159,7 @@ fun SearchBar() {
                     }
                 )
             }
-        }
+        },
     )
 
 
@@ -192,7 +217,15 @@ fun WeatherBackButtonTopBar(navController: NavController) {
 
 
 @Composable
-fun CitiesWeatherList(cities: State<List<DomainEntity>?>) {
+fun CitiesWeatherList(viewModel: WeatherViewModel, navController: NavController) {
+    val cities: State<List<DomainEntity>?> = viewModel.liveLocationList.observeAsState()
+    Log.d(TAG, "CitiesWeatherList: cities:$cities")
+    when(cities.value){
+        null->{}
+        else->{
+            viewModel.getLocationAfterObservation(cities.value!!)
+        }
+    }
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
@@ -201,9 +234,9 @@ fun CitiesWeatherList(cities: State<List<DomainEntity>?>) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         if (cities.value != null){
-            items(cities.value!!
+            items(cities.value!!.reversed()
             ){
-                CityWeatherItem(it)
+                CityWeatherItem(it,viewModel,navController)
             }
         }
 
@@ -211,12 +244,16 @@ fun CitiesWeatherList(cities: State<List<DomainEntity>?>) {
 }
 
 @Composable
-fun CityWeatherItem(item: DomainEntity) {
+fun CityWeatherItem(item: DomainEntity, viewModel: WeatherViewModel, navController: NavController) {
 
     Box(
         modifier = Modifier
             .width(338.dp)
             .height(185.dp)
+            .clickable {
+                viewModel.setToMainDisplay(item)
+                navController.popBackStack()
+            }
     ) {
         Image(
             painter = painterResource(id = R.drawable.item_shap),

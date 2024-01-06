@@ -1,8 +1,8 @@
 package com.example.weatherapp.operations.data_management.data_entities
 
 data class DomainEntity(
-    var id: Int?=null ,
-    var isLastSearchedLocation:Boolean = false,
+    var id: Int?=null,
+    var isMAinDisplay:Boolean = false,
 
 
 
@@ -20,7 +20,7 @@ data class DomainEntity(
     val windKph: Double?,
     val windDir: String?,
     val humidity: Int?,
-    val visKm: Int?,
+    val visKm: Double?,
     val pressureIn: Double?,
     val maxtempC: Double?,
     val mintempC: Double?,

@@ -1,8 +1,5 @@
 package com.example.weatherapp.operations.data_management.data_sources
 
-import android.os.Build
-import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.map
 import com.example.weatherapp.operations.MY_API_KEY
@@ -12,10 +9,7 @@ import com.example.weatherapp.operations.data_management.data_entities.DomainEnt
 import com.example.weatherapp.operations.data_management.data_entities.NetWorkMapper
 import com.example.weatherapp.operations.data_management.data_sources.LocalDataSource.DefaultLocalDataSource
 import com.example.weatherapp.operations.data_management.data_sources.RemoteDataSource.DefaultRemoteDataSource
-import com.example.weatherapp.operations.data_management.data_utils.DataState
 import com.example.weatherapp.operations.data_management.data_utils.getCurrentDateTime
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
@@ -35,9 +29,9 @@ constructor(
     }
 
     // Local
-    suspend fun insertCacheItem(domainEntity: DomainEntity) {
+    suspend fun insertCacheItem(domainEntity: DomainEntity) :Long {
         val cacheItem = cacheMapper.mapFromDomain(domainEntity)
-        localDataSource.insert(cacheItem)
+        return localDataSource.insert(cacheItem)
     }
 
     suspend fun updateCacheItem(domainEntity: DomainEntity) {
@@ -64,17 +58,7 @@ constructor(
     fun getMainDisplay():LiveData<CacheEntity?>{
         return localDataSource.getMainDisplay()
     }
-//    private suspend fun sendToMainDisplay(domainEntity: DomainEntity, list: List<DomainEntity>) {
-//        list.map {
-//            it.isLastSearchedLocation = it.id == domainEntity.id
-//            updateCacheItem(it)
-//        }
-//    }
 
-
-//    fun getMainDisplay(list: List<DomainEntity>): DomainEntity {
-//        return list.find { it.isLastSearchedLocation }!!
-//    }
 
 
     // Remote
@@ -83,35 +67,25 @@ constructor(
     }
 
 
-    // general
-//    suspend fun search(location: String, list: List<DomainEntity>) {
-//        try {
-//            val domainResult: DomainEntity = getLocationForecast(MY_API_KEY, location)
-//            insertCacheItem(domainResult)
-//            sendToMainDisplay(domainResult, list)
-//        } catch (e: Exception) {
-//            //
-//        }
-//    }
 
 
-//    @RequiresApi(Build.VERSION_CODES.O)
-//    suspend fun updateLocationsData() {
-//        val currentDate: String = getCurrentDateTime()
-//        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
-//        val currentDateTime = LocalDateTime.parse(currentDate, formatter)
-//
-//        val locations: List<DomainEntity> = cacheMapper.mapEntitiesList(localDataSource.getCaches().value?: listOf())
-//        locations.forEach { location ->
-//            val lastUpdatedDateTime = LocalDateTime.parse(location.lastUpdated, formatter)
-//            if (lastUpdatedDateTime.isBefore(currentDateTime)) {
-//                // The data is before the current date, so update the data
-//                val updatedItem: DomainEntity = getLocationForecast(MY_API_KEY, location.name!!)
-//                updatedItem.id = location.id
-//                updateCacheItem(updatedItem)
-//            }
-//        }
-//    }
+
+    suspend fun updateCacheData() {
+        val currentDate: String = getCurrentDateTime()
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+        val currentDateTime = LocalDateTime.parse(currentDate, formatter)
+
+        val locations: List<DomainEntity> = cacheMapper.mapEntitiesList(localDataSource.getCaches().value?: listOf())
+        locations.forEach { location ->
+            val lastUpdatedDateTime = LocalDateTime.parse(location.lastUpdated, formatter)
+            if (lastUpdatedDateTime.isBefore(currentDateTime)) {
+                // The data is before the current date, so update the data
+                val updatedItem: DomainEntity = getLocationForecast(MY_API_KEY, location.name!!)
+                updatedItem.id = location.id
+                updateCacheItem(updatedItem)
+            }
+        }
+    }
 
 
 }

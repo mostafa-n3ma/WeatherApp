@@ -11,12 +11,12 @@ data class Current (
     @SerializedName("wind_dir"           ) var windDir          : String?     = null,//
     @SerializedName("pressure_mb"        ) var pressureMb       : Int?        = null,
     @SerializedName("pressure_in"        ) var pressureIn       : Double?     = null,//
-    @SerializedName("precip_mm"          ) var precipMm         : Int?        = null,
-    @SerializedName("precip_in"          ) var precipIn         : Int?        = null,
+    @SerializedName("precip_mm"          ) var precipMm         : Double?        = null,
+    @SerializedName("precip_in"          ) var precipIn         : Double?        = null,
     @SerializedName("humidity"           ) var humidity         : Int?        = null,//
     @SerializedName("cloud"              ) var cloud            : Int?        = null,
     @SerializedName("feelslike_c"        ) var feelslikeC       : Double?     = null,//
-    @SerializedName("vis_km"             ) var visKm            : Int?        = null,//
+    @SerializedName("vis_km"             ) var visKm            : Double?        = null,//
     @SerializedName("uv"                 ) var uv               : Int?        = null,//
     @SerializedName("gust_mph"           ) var gustMph          : Double?     = null,
     @SerializedName("gust_kph"           ) var gustKph          : Double?     = null,
