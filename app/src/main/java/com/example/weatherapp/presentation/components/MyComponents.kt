@@ -1,6 +1,5 @@
 package com.example.weatherapp.presentation.components
 
-import android.util.Log
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -25,19 +24,25 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.BottomSheetScaffoldState
 import androidx.compose.material.BottomSheetValue
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.IconButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.res.painterResource
@@ -55,13 +60,13 @@ import coil.compose.AsyncImage
 import com.example.weatherapp.presentation.AppDestinations
 import com.example.weatherapp.R
 import com.example.weatherapp.operations.data_management.data_utils.isCurrentDayEEE
-import com.example.weatherapp.presentation.screens.ForecastType
 import com.example.weatherapp.presentation.screens.WeatherViewModel
 import com.example.weatherapp.presentation.ui.theme.DarkPrimary
 import com.example.weatherapp.presentation.ui.theme.DarkSecondary
 import com.example.weatherapp.presentation.ui.theme.LinearGradient
 import com.example.weatherapp.presentation.ui.theme.StatCardLinear
 import com.example.weatherapp.presentation.ui.theme.TransparentColor
+import com.example.weatherapp.presentation.ui.theme.color1
 
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -335,8 +340,11 @@ fun ExpandCityMainTextCompose(
 @ExperimentalMaterialApi
 @Composable
 fun HomeScreenFront(navController: NavController, viewModel: WeatherViewModel) {
-    Box(modifier = Modifier.fillMaxSize()) {
+    val dialogStatus = viewModel.showDialog.observeAsState()
 
+    showAlertDialog(dialogStatus,viewModel)
+
+    Box(modifier = Modifier.fillMaxSize()) {
         val isVisible = when (BottomSheetScreen(viewModel).bottomSheetState.targetValue) {
             BottomSheetValue.Collapsed -> false
             BottomSheetValue.Expanded -> true
@@ -426,7 +434,11 @@ fun HomeScreenFront(navController: NavController, viewModel: WeatherViewModel) {
                             contentDescription = stringResource(
                                 R.string.location_button
                             ),
-                            Modifier.size(44.dp),
+                            Modifier
+                                .size(44.dp)
+                                .clickable {
+                                    viewModel.currentLocationBtnClicked()
+                                },
                             tint = DarkPrimary
                         )
                     }
@@ -452,7 +464,90 @@ fun HomeScreenFront(navController: NavController, viewModel: WeatherViewModel) {
 
     }
 }
+@Composable
+fun showAlertDialog(dialogState: State<Boolean?>, viewModel: WeatherViewModel) {
+    val currentLocation: State<String?> = viewModel.savedCurrentLocation.observeAsState()
+    when(dialogState.value){
+        true->{
+            AlertDialogExample(
+                onDismissRequest = { viewModel.dialogStatus(WeatherViewModel.DialogStatus.Closed)},
+                onConfirmation = {viewModel.dialogConfirmBtnClicked() },
+                dialogTitle = "coordinates:${currentLocation.value}",
+                dialogText = "do you want to search this location for weather forecast data ?",
+            )
+        }
+        false->{}
+        else -> {}
+    }
 
+}
+@Composable
+fun AlertDialogExample(
+    onDismissRequest: () -> Unit,
+    onConfirmation: () -> Unit,
+    dialogTitle: String,
+    dialogText: String,
+) {
+    AlertDialog(
+        title = {
+            Text(
+                text = dialogTitle,
+                style = TextStyle(
+                    fontFamily = FontFamily(Font(R.font.sf_pro_display_medium)),
+                    fontSize = 14.sp,
+                    color = DarkPrimary
+                )
+            )
+        },
+        text = {
+            Text(
+                text = dialogText,
+                style = TextStyle(
+                    fontFamily = FontFamily(Font(R.font.sf_pro_display_regular)),
+                    fontSize = 18.sp,
+                    color = DarkPrimary
+                )
+            )
+        },
+        onDismissRequest = {
+//            onDismissRequest()
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onConfirmation()
+                }
+            ) {
+                Text(
+                    "Confirm",
+                    style = TextStyle(
+                        fontFamily = FontFamily(Font(R.font.sf_pro_display_bold)),
+                        fontSize = 18.sp,
+                        color = DarkSecondary
+                    )
+
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = {
+                    onDismissRequest()
+                }
+            ) {
+                Text(
+                    "Dismiss",
+                    style = TextStyle(
+                        fontFamily = FontFamily(Font(R.font.sf_pro_display_bold)),
+                        fontSize = 18.sp,
+                        color = DarkSecondary)
+                )
+            }
+        },
+        backgroundColor = color1,
+        shape = RoundedCornerShape(15.dp)
+    )
+}
 
 @Composable
 fun NavigationBarSlideAnimation(isVisible: Boolean, content: @Composable () -> Unit) {

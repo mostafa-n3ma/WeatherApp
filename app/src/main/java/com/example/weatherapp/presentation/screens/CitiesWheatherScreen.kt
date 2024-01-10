@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,6 +22,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.OutlinedTextField
@@ -42,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -57,7 +61,6 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.weatherapp.R
 import com.example.weatherapp.operations.data_management.data_entities.DomainEntity
-import com.example.weatherapp.presentation.AppDestinations
 import com.example.weatherapp.presentation.ui.theme.DarkPrimary
 import com.example.weatherapp.presentation.ui.theme.DarkSecondary
 import com.example.weatherapp.presentation.ui.theme.DarkTertiary
@@ -72,6 +75,7 @@ fun CitiesWeatherPreview() {
 //    CitiesWeatherScreen(rememberNavController(), viewModel)
 }
 
+@ExperimentalComposeUiApi
 @Composable
 fun CitiesWeatherScreen(navController: NavController, viewModel: WeatherViewModel) {
 
@@ -81,13 +85,14 @@ fun CitiesWeatherScreen(navController: NavController, viewModel: WeatherViewMode
             .background(LinearGradient)
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
-        WeatherBackButtonTopBar(navController)
+        WeatherBackButtonTopBar(navController, viewModel)
         SearchBar(viewModel)
-        CitiesWeatherList(viewModel,navController)
+        CitiesWeatherList(viewModel, navController)
 
     }
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun HideKeyBoard() {
     LocalSoftwareKeyboardController.current?.hide()
@@ -102,8 +107,8 @@ fun SearchBar(viewModel: WeatherViewModel) {
 
     val focusState: State<Boolean?> = viewModel.focusOnTextField.observeAsState()
     val focusRequester = FocusRequester()
-    LaunchedEffect(focusState.value){
-        if (focusState.value == true){
+    LaunchedEffect(focusState.value) {
+        if (focusState.value == true) {
             focusRequester.requestFocus()
             viewModel.requestFocusOnTextField(false)
         }
@@ -112,7 +117,9 @@ fun SearchBar(viewModel: WeatherViewModel) {
     OutlinedTextField(
         value = editableText.value,
         onValueChange = { editableText.value = it },
-        modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
+        modifier = Modifier
+            .fillMaxWidth()
+            .focusRequester(focusRequester),
         singleLine = true,
         label = { Text(text = stringResource(id = R.string.search_for_a_city_or_airport)) },
         colors = TextFieldDefaults.outlinedTextFieldColors(
@@ -137,7 +144,7 @@ fun SearchBar(viewModel: WeatherViewModel) {
         keyboardActions = KeyboardActions(
             onSearch = {
                 Log.d("search Bar testing", "SearchBar: search(${editableText.value}")
-                if (editableText.value.trim().isNotEmpty()){
+                if (editableText.value.trim().isNotEmpty()) {
                     viewModel.search(editableText.value)
                     viewModel.hideKeBoard()
                 }
@@ -167,7 +174,7 @@ fun SearchBar(viewModel: WeatherViewModel) {
 
 
 @Composable
-fun WeatherBackButtonTopBar(navController: NavController) {
+fun WeatherBackButtonTopBar(navController: NavController, viewModel: WeatherViewModel) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -203,15 +210,42 @@ fun WeatherBackButtonTopBar(navController: NavController) {
                 )
             )
         }
-
-        Icon(
-            painter = painterResource(id = R.drawable.more_btn),
-            contentDescription = "more btn",
-            tint = DarkPrimary,
+        val isExpended = remember {
+            mutableStateOf(false)
+        }
+        Column(
             modifier = Modifier
-                .align(Alignment.CenterEnd)
                 .size(32.dp)
-        )
+                .align(Alignment.CenterEnd)
+                .clickable { isExpended.value = true },
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+
+            Icon(
+                painter = painterResource(id = R.drawable.more_btn),
+                contentDescription = "more btn",
+                tint = DarkPrimary,
+                modifier = Modifier
+                    .fillMaxSize()
+            )
+
+            DropdownMenu(
+                expanded = isExpended.value,
+                onDismissRequest = { isExpended.value = false }) {
+                DropdownMenuItem(
+
+                    modifier = Modifier.width(100.dp).height(20.dp),
+                    onClick = {
+                    viewModel.clearDataBase()
+                    isExpended.value = false
+                }) {
+                    Text(text = "Clear All")
+                }
+            }
+        }
+
+
     }
 }
 
@@ -220,9 +254,9 @@ fun WeatherBackButtonTopBar(navController: NavController) {
 fun CitiesWeatherList(viewModel: WeatherViewModel, navController: NavController) {
     val cities: State<List<DomainEntity>?> = viewModel.liveLocationList.observeAsState()
     Log.d(TAG, "CitiesWeatherList: cities:$cities")
-    when(cities.value){
-        null->{}
-        else->{
+    when (cities.value) {
+        null -> {}
+        else -> {
             viewModel.getLocationAfterObservation(cities.value!!)
         }
     }
@@ -233,10 +267,11 @@ fun CitiesWeatherList(viewModel: WeatherViewModel, navController: NavController)
         verticalArrangement = Arrangement.spacedBy(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        if (cities.value != null){
-            items(cities.value!!.reversed()
-            ){
-                CityWeatherItem(it,viewModel,navController)
+        if (cities.value != null) {
+            items(
+                cities.value!!.reversed()
+            ) {
+                CityWeatherItem(it, viewModel, navController)
             }
         }
 
@@ -245,78 +280,147 @@ fun CitiesWeatherList(viewModel: WeatherViewModel, navController: NavController)
 
 @Composable
 fun CityWeatherItem(item: DomainEntity, viewModel: WeatherViewModel, navController: NavController) {
-
-    Box(
+    val isExpended = remember {
+        mutableStateOf(false)
+    }
+    Column(
         modifier = Modifier
             .width(338.dp)
-            .height(185.dp)
-            .clickable {
-                viewModel.setToMainDisplay(item)
-                navController.popBackStack()
-            }
+            .height(185.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.item_shap),
-            contentDescription = "",
-            Modifier.fillMaxSize()
-        )
-        AsyncImage(
-            model = "https:${item.condition_ic}",
-            contentDescription = "ic",
-            Modifier
-                .size(140.dp)
-                .align(Alignment.TopEnd)
-                .padding(0.dp)
-        )
-
-        Column(
+        Box(
             modifier = Modifier
-                .fillMaxHeight()
-                .padding(top = 30.dp, start = 16.dp, bottom = 4.dp),
-            verticalArrangement = Arrangement.spacedBy(2.dp)
+                .fillMaxSize()
+//            .clickable {
+//                viewModel.setToMainDisplay(item)
+//                navController.popBackStack()
+//            }
+                .pointerInput(Unit) {
+                    detectTapGestures(
+
+                        onLongPress = {
+                            Log.d(TAG, "CityWeatherItem: press detecting test: onLongPress ")
+                            isExpended.value = true
+                        },
+
+                        onTap = {
+                            Log.d(TAG, "CityWeatherItem: press detecting test: onTap ")
+                            viewModel.setToMainDisplay(item)
+                            navController.popBackStack()
+                        }
+                    )
+                },
         ) {
-            Text(
-                text = "${item.tempC}°",
-                style = TextStyle(
-                    fontFamily = FontFamily(Font(R.font.sf_pro_display_regular)),
-                    fontWeight = FontWeight(400),
-                    fontSize = 64.sp,
-                    color = DarkPrimary
-                )
+            Image(
+                painter = painterResource(id = R.drawable.item_shap),
+                contentDescription = "",
+                Modifier.fillMaxSize()
             )
+            AsyncImage(
+                model = "https:${item.condition_ic}",
+                contentDescription = "ic",
+                Modifier
+                    .size(140.dp)
+                    .align(Alignment.TopEnd)
+                    .padding(0.dp)
+            )
+
+            Column(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .padding(top = 30.dp, start = 16.dp, bottom = 4.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                Text(
+                    text = "${item.tempC}°",
+                    style = TextStyle(
+                        fontFamily = FontFamily(Font(R.font.sf_pro_display_regular)),
+                        fontWeight = FontWeight(400),
+                        fontSize = 64.sp,
+                        color = DarkPrimary
+                    )
+                )
+                Text(
+                    text = "H:${item.maxtempC}° L${item.mintempC}°",
+                    style = TextStyle(
+                        fontFamily = FontFamily(Font(R.font.sf_pro_display_regular)),
+                        fontWeight = FontWeight(400),
+                        fontSize = 16.sp,
+                        color = DarkSecondary
+                    ),
+                )
+                val name = item.name
+                var country: String = item.country ?: ""
+                val name_country = when (country.length > 10) {
+                    true -> {
+                        "$name , ${country.substring(0, 10)}"
+                    }
+
+                    else -> {
+                        "$name,$country"
+                    }
+                }
+                Text(
+//                text = "${item.name},${item.country}",
+                    text = "$name_country",
+                    style = TextStyle(
+                        fontFamily = FontFamily(Font(R.font.sf_pro_display_regular)),
+                        fontWeight = FontWeight(400),
+                        fontSize = 20.sp,
+                        color = DarkPrimary
+                    ),
+
+                    )
+            }
+
             Text(
-                text = "H:${item.maxtempC}° L${item.mintempC}°",
+                text = "${item.condition_txt}",
                 style = TextStyle(
                     fontFamily = FontFamily(Font(R.font.sf_pro_display_regular)),
                     fontWeight = FontWeight(400),
                     fontSize = 16.sp,
                     color = DarkSecondary
                 ),
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(bottom = 18.dp, end = 20.dp)
             )
-            Text(
-                text = "${item.name},${item.country}",
-                style = TextStyle(
-                    fontFamily = FontFamily(Font(R.font.sf_pro_display_regular)),
-                    fontWeight = FontWeight(400),
-                    fontSize = 20.sp,
-                    color = DarkPrimary
-                ),
-            )
+
+
         }
 
-        Text(
-            text = "${item.condition_txt}",
-            style = TextStyle(
-                fontFamily = FontFamily(Font(R.font.sf_pro_display_regular)),
-                fontWeight = FontWeight(400),
-                fontSize = 16.sp,
-                color = DarkSecondary
-            ),
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(bottom = 18.dp, end = 20.dp)
-        )
+        DropdownMenu(expanded = isExpended.value, onDismissRequest = { isExpended.value = false }) {
+            DropdownMenuItem(
+                modifier = Modifier
+                    .width(120.dp)
+                    .height(20.dp),
+                onClick = {
+                    Log.d(TAG, "CityWeatherItem: dropdown test: delete from drop down menu clicked")
+                    viewModel.deleteCacheItem(item)
+                    isExpended.value = false
+                }) {
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Icon(
+                        painterResource(id = R.drawable.delete),
+                        modifier = Modifier
+                            .padding(horizontal = 4.dp)
+                            .size(20.dp),
+                        contentDescription = ""
+                    )
+                    Text(
+                        text = "Delete",
+                        style = TextStyle(
+                            fontSize = 18.sp,
+                            fontFamily = FontFamily(Font(R.font.sf_pro_display_bold)),
+                            fontWeight = FontWeight(800)
+                        ),
+                    )
+                }
 
-
+            }
+        }
     }
+
 }

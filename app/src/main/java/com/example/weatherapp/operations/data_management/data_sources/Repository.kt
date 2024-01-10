@@ -41,7 +41,7 @@ constructor(
 
     suspend fun deleteCacheItem(domainEntity: DomainEntity) {
         val cacheItem = cacheMapper.mapFromDomain(domainEntity)
-        localDataSource.update(cacheItem)
+        localDataSource.delete(cacheItem)
     }
 
     suspend fun clearDatabase(){

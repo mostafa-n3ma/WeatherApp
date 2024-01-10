@@ -19,8 +19,6 @@ import com.example.weatherapp.presentation.MyAppNavigator
 import com.example.weatherapp.presentation.screens.WeatherViewModel
 import com.example.weatherapp.presentation.ui.theme.WeatherAppTheme
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
-import kotlin.math.log
 
 @ExperimentalMaterialApi
 @AndroidEntryPoint
@@ -28,10 +26,11 @@ import kotlin.math.log
     val viewModel :WeatherViewModel by viewModels()
     companion object{
         val TAG = "MainActivity"
+        private const val REQUEST_LOCATION_PERMISSION = 100
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        var updated =false
+
         setContent {
             WeatherAppTheme {
                 Surface(
@@ -39,31 +38,51 @@ import kotlin.math.log
                     color = MaterialTheme.colorScheme.background
                 ) {
                     MyAppNavigator(viewModel)
-                    viewModel.liveLocationList.observe(this, Observer {
-                        Log.d(TAG, "onCreate:x99 liveLocationsData: ${it}")
-                        if (it.isNullOrEmpty()){
-                            viewModel.getDefaultDisplayLocation()
-                        }else{
-                            Log.d(TAG, "onCreate: calling update cache once: update:$updated")
-                            if (!updated){
-                                viewModel.updateCacheData(it)
-                                updated =true
-                            }
-                        }
-                    })
-                    viewModel.liveMainDisplayLocation.observe(this, Observer {
-                        Log.d(TAG, "onCreate: Main Display Location : $it")
-                    })
+                    subscribeObservers()
 
-                    viewModel.hideKeyBoard.observe(this, Observer {
-                        if (it){
-                            hideKeyboard()
-                        }
-                    })
                 }
             }
         }
     }
+
+
+
+
+
+
+
+
+
+
+    private fun subscribeObservers() {
+        var updated =false
+        viewModel.liveLocationList.observe(this, Observer {
+            Log.d(TAG, "onCreate:x99 liveLocationsData: ${it}")
+            if (it.isNullOrEmpty()){
+                viewModel.getDefaultDisplayLocation()
+            }else{
+                Log.d(TAG, "onCreate: calling update cache once: update:$updated")
+                if (!updated){
+                    viewModel.updateCacheData(it)
+                    updated =true
+                    viewModel.getLocationAfterObservation(it)
+                }
+            }
+        })
+        viewModel.liveMainDisplayLocation.observe(this, Observer {
+            Log.d(TAG, "onCreate: Main Display Location : $it")
+        })
+
+        viewModel.hideKeyBoard.observe(this, Observer {
+            if (it){
+                hideKeyboard()
+            }
+        })
+    }
+
+
+
+
 }
 
 

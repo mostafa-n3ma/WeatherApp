@@ -16,8 +16,10 @@ import javax.inject.Inject
 import androidx.lifecycle.map
 import com.example.weatherapp.operations.data_management.data_utils.getCurrentDateTime
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.math.log
 
 
 @HiltViewModel
@@ -31,6 +33,90 @@ constructor(
     companion object {
         val TAG: String = "WeatherViewModel"
     }
+
+    val liveLocationList: LiveData<List<DomainEntity>> get() = repository.getSearchedLocationsList()
+    lateinit var observedLocations: List<DomainEntity>
+
+    private val _savedCurrentLocation = MutableLiveData<String?>()
+    val savedCurrentLocation:LiveData<String?> get() = _savedCurrentLocation
+
+    fun saveCurrentLocation(value: String?){
+        _savedCurrentLocation.value = value
+    }
+
+
+
+    private val _showDialog = MutableLiveData<Boolean>()
+    val showDialog : LiveData<Boolean> get() = _showDialog
+    enum class DialogStatus{Opened,Closed}
+    fun dialogStatus(status:DialogStatus){
+        when(status){
+            DialogStatus.Opened -> {_showDialog.value = true}
+            DialogStatus.Closed -> {_showDialog.value = false}
+        }
+    }
+
+    fun currentLocationBtnClicked(){
+        when(_savedCurrentLocation.value){
+            null->{
+                announceSnackBarMessage("cannot get current location check location Permissions")
+            }
+            else->{
+               dialogStatus(DialogStatus.Opened)
+            }
+        }
+    }
+
+
+    fun dialogConfirmBtnClicked(){
+        if (!_savedCurrentLocation.value.isNullOrEmpty()){
+            searchCurrentLocation(_savedCurrentLocation.value.toString())
+            dialogStatus(DialogStatus.Closed)
+        }
+    }
+
+
+    private fun searchCurrentLocation(name: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val result: DomainEntity = repository.getLocationForecast(MY_API_KEY, name)
+                val isAvailable: DomainEntity? = observedLocations.find {
+                    it.name == result.name
+                }
+                when(isAvailable){
+                    null->{
+                        Log.d(TAG, "search: the item is not existed before -> adding")
+                        val databaseResult: Long = repository.insertCacheItem(result)
+                        result.apply { id = databaseResult.toInt() }
+                    }
+                    else->{
+                        Log.d(TAG, "search: the item is already existed -> updating")
+                        result.id = isAvailable.id
+                        repository.updateCacheItem(result)
+                    }
+                }
+
+                delay(2000)
+                setToMainDisplay(result)
+
+
+            } catch (e: Exception) {
+                Log.d(TAG, "search: error: ${e.message}")
+            }
+        }
+    }
+
+
+
+
+fun deleteCacheItem(domainEntity: DomainEntity){
+    viewModelScope.launch (Dispatchers.IO){
+        repository.deleteCacheItem(domainEntity)
+    }
+}
+
+
+
 
 
 
@@ -48,6 +134,7 @@ constructor(
     val snackBarAnnouncement: LiveData<String> get() = _snackBarAnnouncement
     fun announceSnackBarMessage(msg: String) {
         _snackBarAnnouncement.value = msg
+        _snackBarAnnouncement.value = ""
     }
 
 
@@ -73,10 +160,11 @@ constructor(
         _hideKeyBoard.value = false
         _snackBarAnnouncement.value = ""
         _focusOnTextField.value = false
+        _savedCurrentLocation.value = null
+        _showDialog.value = false
     }
 
-    val liveLocationList: LiveData<List<DomainEntity>> get() = repository.getSearchedLocationsList()
-    lateinit var observedLocations: List<DomainEntity>
+
     fun getLocationAfterObservation(list: List<DomainEntity>) {
         observedLocations = list
     }
@@ -91,7 +179,7 @@ constructor(
         }
 
 
-    private fun clearDataBase() {
+     fun clearDataBase() {
         viewModelScope.launch(Dispatchers.IO) {
             repository.clearDatabase()
         }
@@ -108,16 +196,25 @@ constructor(
     }
 
     fun search(name: String) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
-//                val deferredResults: Deferred<Unit> = async {
                 val result: DomainEntity = repository.getLocationForecast(MY_API_KEY, name)
                 Log.d(TAG, "search: result from api $result")
-                val databaseResult = repository.insertCacheItem(result)
-                Log.d(TAG, "search: result from database $databaseResult")
-
-//                }
-//                deferredResults.await()
+                Log.d(TAG, "search: observedLocations = ${observedLocations}")
+                val isAvailable: DomainEntity? = observedLocations.find {
+                    it.name == result.name
+                }
+                when(isAvailable){
+                   null->{
+                        Log.d(TAG, "search: the item is not existed before -> adding")
+                        val databaseResult: Long = repository.insertCacheItem(result)
+                    }
+                    else->{
+                        Log.d(TAG, "search: the item is already existed -> updating")
+                        result.id = isAvailable.id
+                        repository.updateCacheItem(result)
+                    }
+                }
             } catch (e: Exception) {
                 Log.d(TAG, "search: error: ${e.message}")
             }
